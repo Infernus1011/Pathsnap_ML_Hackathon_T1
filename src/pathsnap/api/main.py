@@ -83,7 +83,7 @@ def health():
 def get_trips():
 
     try:
-        trips = registry.get_trip_ids()
+        trips = registry.list_trip_ids()
 
         return TripListResponse(
             trips=trips,
