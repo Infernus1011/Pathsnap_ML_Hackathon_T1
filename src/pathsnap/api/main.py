@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import time
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,7 +10,8 @@ from pathsnap.api.schemas import (
     HealthResponse,
     TripListResponse,
     PredictionRequest,
-    PredictionResponse
+    PredictionResponse,
+    EvaluationMetrics,
 )
 
 from pathsnap.api.trip_registry import TripRegistry
@@ -17,7 +19,7 @@ from pathsnap.api.pipeline import PathSnapPipeline
 from dotenv import load_dotenv
 
 # Repository root
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 load_dotenv(PROJECT_ROOT / ".env")
 
 # Dataset directory
@@ -26,10 +28,31 @@ DATA_ROOT = PROJECT_ROOT / "src" / "pathsnap" / "data"
 # Evaluator trip manifest
 MANIFEST_PATH = DATA_ROOT / "evaluator_trip_manifest.csv"
 
+registry = TripRegistry(
+    manifest_path=MANIFEST_PATH,
+    data_root=DATA_ROOT,
+)
+pipeline = PathSnapPipeline()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load the ML model once when the server starts."""
+    try:
+        pipeline.load()
+        print("[startup] PathSnap pipeline ready.")
+    except FileNotFoundError as exc:
+        print(f"[startup] WARNING: {exc}")
+        print("[startup] API will return 503 for /predict until the model is generated.")
+    yield
+    # Shutdown: nothing to clean up
+
+
 app = FastAPI(
     title="PathSnap API",
     description="GPS Map Matching and Route Reconstruction",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan,
 )
 
 # Configure the frontend origin in deployment.
@@ -45,12 +68,6 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
-
-registry = TripRegistry(
-    manifest_path=MANIFEST_PATH,
-    data_root=DATA_ROOT,
-)
-pipeline = PathSnapPipeline()
 
 
 @app.get("/", tags=["General"])
@@ -107,7 +124,8 @@ def get_trips():
 def predict(request: PredictionRequest):
 
     try:
-        trip = registry.get_trip(request.trip_id)
+        # get_trip returns an absolute Path to the .track file
+        track_path = registry.get_trip(request.trip_id)
 
     except KeyError:
 
@@ -123,11 +141,6 @@ def predict(request: PredictionRequest):
             detail=str(error)
         )
 
-    track_path = Path(trip["track_path"])
-
-    if not track_path.is_absolute():
-        track_path = PROJECT_ROOT / track_path
-
     if not track_path.is_file():
         raise HTTPException(
             status_code=404,
@@ -137,7 +150,7 @@ def predict(request: PredictionRequest):
     if not pipeline.is_ready:
         raise HTTPException(
             status_code=503,
-            detail="Prediction pipeline is not integrated yet."
+            detail="Prediction pipeline is not ready. Run train_and_save_model.py first."
         )
 
     start_time = time.perf_counter()
@@ -157,10 +170,19 @@ def predict(request: PredictionRequest):
 
     elapsed = time.perf_counter() - start_time
 
+    # Build EvaluationMetrics from result dict if available
+    metrics = None
+    if result.get("metrics"):
+        metrics = EvaluationMetrics(
+            route_continuity=result["metrics"].get("route_continuity")
+        )
+
     return PredictionResponse(
         trip_id=request.trip_id,
         predicted_arc_ids=result["predicted_arc_ids"],
-        metrics=result.get("metrics"),
+        compressed_route=result.get("compressed_route", []),
+        route_continuity=result.get("route_continuity", 0.0),
+        metrics=metrics,
         processing_time_seconds=elapsed,
         message="Prediction completed successfully."
     )

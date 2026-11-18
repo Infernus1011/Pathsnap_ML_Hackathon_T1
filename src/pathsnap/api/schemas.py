@@ -28,6 +28,8 @@ class EvaluationMetrics(BaseModel):
 class PredictionResponse(BaseModel):
     trip_id: str
     predicted_arc_ids: list[int]
+    compressed_route: list[int] = []
+    route_continuity: float = 0.0
     metrics: Optional[EvaluationMetrics] = None
     processing_time_seconds: float
     message: str
