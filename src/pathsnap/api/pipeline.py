@@ -15,8 +15,8 @@ from pathsnap.data.preprocessing import preprocess_trip
 from pathsnap.features.feature_engineering import RoadCandidateGenerator
 from pathsnap.route.hmm_decoder import HMMRouteDecoder
 
-# Repo root is 4 levels above this file: src/pathsnap/api/pipeline.py
-_REPO_ROOT = Path(__file__).resolve().parents[4]
+# Repo root is 3 levels above this file: src/pathsnap/api/pipeline.py
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 _DEFAULT_MODEL_PATH = _REPO_ROOT / "artifacts" / "final_model.joblib"
 
 FEATURE_COLS = [

@@ -18,8 +18,8 @@ from pathsnap.api.trip_registry import TripRegistry
 from pathsnap.api.pipeline import PathSnapPipeline
 from dotenv import load_dotenv
 
-# Repository root
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
+# Repository root (src/pathsnap/api/main.py -> parents[3])
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 load_dotenv(PROJECT_ROOT / ".env")
 
 # Dataset directory
