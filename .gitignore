@@ -24,10 +24,18 @@ data/raw/*
 data/processed/*
 data/external/*
 
+src/pathsnap/data/raw/*
+src/pathsnap/data/processed/*
+src/pathsnap/data/external/*
+
 # Preserve directory placeholders
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/external/.gitkeep
+
+!src/pathsnap/data/raw/.gitkeep
+!src/pathsnap/data/processed/.gitkeep
+!src/pathsnap/data/external/.gitkeep
 
 # Model artifacts
 artifacts/*
