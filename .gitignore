@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data
+data/raw/*
+data/processed/*
+data/external/*
+
+# Preserve directory placeholders
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/external/.gitkeep
+
+# Model artifacts
+artifacts/*
+!artifacts/.gitkeep
+
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+
+# Temporary files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Generated reports and maps
+reports/generated/
+*.html.tmp
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
