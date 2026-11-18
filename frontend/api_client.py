@@ -1,7 +1,12 @@
 import os
 
 import requests
+from pathlib import Path
+from dotenv import load_dotenv
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+load_dotenv(PROJECT_ROOT / ".env")
 
 API_BASE_URL = os.getenv(
     "PATHSNAP_API_URL",

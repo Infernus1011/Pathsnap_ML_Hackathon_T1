@@ -14,10 +14,11 @@ from pathsnap.api.schemas import (
 
 from pathsnap.api.trip_registry import TripRegistry
 from pathsnap.api.pipeline import PathSnapPipeline
-
+from dotenv import load_dotenv
 
 # Repository root
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+load_dotenv(PROJECT_ROOT / ".env")
 
 # Dataset directory
 DATA_ROOT = PROJECT_ROOT / "src" / "pathsnap" / "data"
