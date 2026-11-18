@@ -1,3 +1,0 @@
-"""
-PathSnap evaluator frontend.
-"""
